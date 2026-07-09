@@ -1,0 +1,5 @@
+node_modules/
+package.json
+package-lock.json
+.gemini_session
+gemini_server.js
