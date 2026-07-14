@@ -31,6 +31,11 @@ _daily/
 _github_setting/
 chat-server/
 mini_pr/
+training/
+assets/
 
 # AI 분석 캐시 - 로컬 전용
 .understand-anything/
+
+# GROQ_API_KEY
+.env
