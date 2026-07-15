@@ -1,0 +1,196 @@
+/* ===== 레트로 카시오 계산기 ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --body-light: #e9eae4;
+  --body-mid:   #c8c9c4;
+  --body-dark:  #a7a89f;
+  --lcd-bg:     #9ab88f;
+  --lcd-bg2:    #b6cfa8;
+  --lcd-ink:    #2b3a26;
+  --lcd-ink-dim:#5c6e50;
+  --num-btn:    #f3f3ee;
+  --num-btn-d:  #d5d6cf;
+  --func-btn:   #b9bab2;
+  --func-btn-d: #9a9b92;
+  --op-btn:     #e8892b;
+  --op-btn-d:   #c46e17;
+  --mem-btn:    #7f8a86;
+  --mem-btn-d:  #63706b;
+  --eq-btn:     #d9483b;
+  --eq-btn-d:   #b3352a;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 30% 20%, #f4f4ef, #d7d8d1 70%);
+  font-family: "Courier New", Courier, monospace;
+  padding: 24px;
+}
+
+/* ===== 몸통 ===== */
+.calculator {
+  width: 320px;
+  max-width: 90vw;
+  padding: 22px 20px 26px;
+  border-radius: 22px 22px 30px 30px;
+  background: linear-gradient(160deg, var(--body-light), var(--body-mid) 55%, var(--body-dark));
+  box-shadow:
+    inset 0 2px 3px rgba(255,255,255,.8),
+    inset 0 -4px 8px rgba(0,0,0,.28),
+    0 14px 30px rgba(0,0,0,.35),
+    0 2px 0 #8f9089;
+  border: 1px solid rgba(255,255,255,.35);
+}
+
+/* ===== 브랜드 각인 ===== */
+.brand {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
+}
+.brand-name {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 1px;
+  color: #3c3d38;
+  text-shadow: 0 1px 0 rgba(255,255,255,.6);
+}
+.brand-sub {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #6d6e66;
+}
+
+/* ===== LCD 패널 ===== */
+.lcd-panel {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: linear-gradient(#2c2f28, #3a3d34);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,.6);
+}
+.solar {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 34px;
+  padding: 4px;
+  border-radius: 4px;
+  background: #23261f;
+}
+.solar span {
+  flex: 1;
+  border-radius: 2px;
+  background: linear-gradient(#4a5240, #2f3529);
+  border: 1px solid #1b1f16;
+}
+
+.display {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: linear-gradient(var(--lcd-bg2), var(--lcd-bg));
+  box-shadow: inset 0 2px 5px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.15);
+  text-align: right;
+  overflow: hidden;
+}
+.display-expr {
+  height: 18px;
+  font-size: 13px;
+  color: var(--lcd-ink-dim);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.display-main {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--lcd-ink);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 0 rgba(255,255,255,.25);
+}
+
+/* ===== 버튼 그리드 ===== */
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.btn {
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 700;
+  color: #33352f;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(var(--num-btn), var(--num-btn-d));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.9),
+    0 3px 0 var(--num-btn-d),
+    0 4px 6px rgba(0,0,0,.22);
+  transition: transform .04s ease, box-shadow .04s ease, filter .1s ease;
+}
+.btn.zero { grid-column: span 2; }
+
+.btn.func {
+  background: linear-gradient(var(--func-btn), var(--func-btn-d));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 3px 0 var(--func-btn-d), 0 4px 6px rgba(0,0,0,.22);
+}
+.btn.mem {
+  font-size: 15px;
+  color: #f2f4f1;
+  background: linear-gradient(var(--mem-btn), var(--mem-btn-d));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 3px 0 var(--mem-btn-d), 0 4px 6px rgba(0,0,0,.22);
+}
+.btn.op {
+  color: #fff;
+  background: linear-gradient(var(--op-btn), var(--op-btn-d));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.4), 0 3px 0 var(--op-btn-d), 0 4px 6px rgba(0,0,0,.22);
+}
+.btn.equals {
+  color: #fff;
+  background: linear-gradient(var(--eq-btn), var(--eq-btn-d));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 3px 0 var(--eq-btn-d), 0 4px 6px rgba(0,0,0,.22);
+}
+
+/* 활성 연산자 표시 */
+.btn.op.active {
+  filter: brightness(1.15);
+  outline: 2px solid rgba(255,255,255,.85);
+  outline-offset: -3px;
+}
+
+/* 눌림 효과 (마우스 + 키보드 공용 .pressed) */
+.btn:active,
+.btn.pressed {
+  transform: translateY(3px);
+  box-shadow:
+    inset 0 1px 2px rgba(0,0,0,.3),
+    0 0 0 var(--num-btn-d),
+    0 1px 2px rgba(0,0,0,.25);
+  filter: brightness(.97);
+}
+
+@media (max-width: 360px) {
+  .display-main { font-size: 34px; }
+  .btn { height: 46px; font-size: 18px; }
+}

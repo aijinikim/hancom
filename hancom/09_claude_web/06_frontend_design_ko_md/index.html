@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>계산기</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+/>
+<style>
+  :root {
+    /* ── Color (SOCAR Frame 2.0 tokens) ───────────────────────── */
+    --primary:        oklch(0.620 0.219 257);   /* blue-500, brand */
+    --primary-strong: oklch(0.586 0.236 261);   /* pressed / operator text */
+    --primary-heavy:  oklch(0.526 0.224 263);
+    --blue-50:        oklch(0.962 0.022 248);
+    --blue-100:       oklch(0.917 0.040 240);   /* secondary fill surface */
+    --bg:             oklch(0.967 0.004 271);   /* background-regular wash */
+    --white:          oklch(1 0 0);
+    --gray-100:       oklch(0.967 0.004 271);   /* tertiary key surface */
+    --gray-200:       oklch(0.927 0.009 264);
+    --text-strong:    oklch(0.211 0.026 261);   /* result number */
+    --text-primary:   oklch(0.331 0.034 264);   /* digit key label */
+    --text-secondary: oklch(0.519 0.039 263);   /* expression line */
+    --text-tertiary:  oklch(0.687 0.035 265);
+    --text-disabled:  oklch(0.781 0.027 267);
+    --divider:        oklch(0.927 0.009 264);   /* 1px hairline */
+    --pressed-dark:   oklch(0 0 0 / 0.08);      /* ripple on dark fill */
+    --pressed:        oklch(0.211 0.026 261 / 0.06);
+
+    /* ── Type ─────────────────────────────────────────────────── */
+    --font: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+      system-ui, Roboto, "Helvetica Neue", "Apple SD Gothic Neo", "Noto Sans KR",
+      sans-serif;
+
+    /* ── Radius (radius-{n} = n/25 px) ────────────────────────── */
+    --r-key:  14px;   /* radius-350 */
+    --r-card: 16px;   /* radius-400 */
+    --r-pill: 9999px;
+
+    /* ── Motion ───────────────────────────────────────────────── */
+    --ease-standard: cubic-bezier(0.42, 0, 0.58, 1);
+    --dur-100: 100ms;
+    --dur-150: 150ms;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    display: flex;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .app {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+
+  /* ── Header (TopAppBar tone) ─────────────────────────────────── */
+  .topbar {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 12px;
+  }
+  .topbar__title {
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 600;
+    color: var(--text-strong);
+    letter-spacing: -0.01em;
+  }
+  /* AC chip = pill, SOCAR chip pattern */
+  .chip {
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 22px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--white);
+    border: 1px solid var(--divider);
+    border-radius: var(--r-pill);
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: transform var(--dur-100) var(--ease-standard),
+      background var(--dur-100) var(--ease-standard);
+  }
+  .chip:active { transform: scale(0.95); background: var(--pressed); }
+  .chip:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary);
+  }
+
+  /* ── Display card ────────────────────────────────────────────── */
+  .display {
+    background: var(--white);
+    border: 1px solid var(--divider);
+    border-radius: var(--r-card);
+    padding: 22px 20px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    min-height: 132px;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+  .display__expr {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 400;
+    color: var(--text-secondary);
+    font-feature-settings: "tnum";
+    min-height: 24px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .display__result {
+    font-size: 52px;
+    line-height: 1.04;
+    font-weight: 700;
+    color: var(--text-strong);
+    font-feature-settings: "tnum";
+    letter-spacing: -0.02em;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    direction: ltr;
+  }
+  .display__result.is-error {
+    color: var(--primary-strong);
+    font-size: 34px;
+  }
+
+  /* ── Keypad ──────────────────────────────────────────────────── */
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .key {
+    font-family: inherit;
+    position: relative;
+    border: 1px solid transparent;
+    border-radius: var(--r-key);
+    height: 68px;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 700;
+    cursor: pointer;
+    overflow: hidden;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform var(--dur-100) var(--ease-standard);
+  }
+  /* press ripple (SOCAR ::after overlay, clipped to key radius) */
+  .key::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: transparent;
+    transition: background var(--dur-100) var(--ease-standard);
+    pointer-events: none;
+  }
+  .key:active { transform: scale(0.92); }
+
+  /* digit — white surface */
+  .key--digit {
+    background: var(--white);
+    color: var(--text-primary);
+    border-color: var(--divider);
+  }
+  .key--digit:active::after { background: var(--pressed); }
+
+  /* operator — fill/secondary (blue) */
+  .key--op {
+    background: var(--blue-100);
+    color: var(--primary-strong);
+    font-weight: 400;
+    font-size: 24px;
+  }
+  .key--op.is-active {
+    background: var(--primary);
+    color: var(--white);
+  }
+  .key--op:active::after { background: var(--pressed-dark); }
+
+  /* utility — fill/tertiary (neutral) */
+  .key--util {
+    background: var(--gray-100);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 18px;
+  }
+  .key--util:active::after { background: var(--pressed); }
+
+  /* equals — fill/primary (the one primary slot) */
+  .key--eq {
+    background: var(--primary);
+    color: var(--white);
+    font-size: 26px;
+  }
+  .key--eq:active::after { background: var(--pressed-dark); }
+
+  .key--wide { grid-column: span 2; }
+
+  .key:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--primary);
+  }
+
+  /* ── Footer attribution ──────────────────────────────────────── */
+  .foot {
+    margin-top: 16px;
+    padding: 0 4px;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 400;
+    color: var(--text-tertiary);
+  }
+  .foot a { color: var(--text-secondary); text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+
+  /* ── Signature: brand immersion flash ────────────────────────── */
+  #flash-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .flash {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    will-change: transform, opacity;
+    /* radial from pressed key position, blue dim fill */
+    background: radial-gradient(
+      circle at var(--fx, 50%) var(--fy, 50%),
+      oklch(0.620 0.219 257 / var(--peak, 0.28)) 0%,
+      oklch(0.620 0.219 257 / calc(var(--peak, 0.28) * 0.62)) 45%,
+      oklch(0.620 0.219 257 / 0) 78%
+    );
+    animation: flash-fill 190ms var(--ease-standard) forwards;
+  }
+  @keyframes flash-fill {
+    0%   { opacity: 0; transform: scale(0.15); }
+    28%  { opacity: 1; transform: scale(0.6); }
+    100% { opacity: 0; transform: scale(1); }
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────── */
+  @media (max-width: 380px) {
+    .key { height: 60px; font-size: 19px; }
+    .display__result { font-size: 44px; }
+    body { padding: 16px 12px; }
+  }
+
+  /* ── Reduced motion ──────────────────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    .key, .chip { transition: none; }
+    .key:active, .chip:active { transform: none; }
+    #flash-layer { display: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <h1 class="topbar__title">계산기</h1>
+      <button type="button" class="chip" data-action="all-clear" aria-label="전체 지우기">지우기</button>
+    </header>
+
+    <section class="display" aria-live="polite">
+      <div class="display__expr" id="expr" aria-hidden="true"></div>
+      <output class="display__result" id="result" aria-label="계산 결과">0</output>
+    </section>
+
+    <div class="keypad" id="keypad">
+      <button type="button" class="key key--util" data-action="all-clear">AC</button>
+      <button type="button" class="key key--util" data-action="negate" aria-label="부호 바꾸기">±</button>
+      <button type="button" class="key key--util" data-action="percent" aria-label="퍼센트">%</button>
+      <button type="button" class="key key--op" data-op="divide" aria-label="나누기">÷</button>
+
+      <button type="button" class="key key--digit" data-digit="7">7</button>
+      <button type="button" class="key key--digit" data-digit="8">8</button>
+      <button type="button" class="key key--digit" data-digit="9">9</button>
+      <button type="button" class="key key--op" data-op="multiply" aria-label="곱하기">×</button>
+
+      <button type="button" class="key key--digit" data-digit="4">4</button>
+      <button type="button" class="key key--digit" data-digit="5">5</button>
+      <button type="button" class="key key--digit" data-digit="6">6</button>
+      <button type="button" class="key key--op" data-op="subtract" aria-label="빼기">−</button>
+
+      <button type="button" class="key key--digit" data-digit="1">1</button>
+      <button type="button" class="key key--digit" data-digit="2">2</button>
+      <button type="button" class="key key--digit" data-digit="3">3</button>
+      <button type="button" class="key key--op" data-op="add" aria-label="더하기">+</button>
+
+      <button type="button" class="key key--digit key--wide" data-digit="0">0</button>
+      <button type="button" class="key key--digit" data-action="decimal" aria-label="소수점">.</button>
+      <button type="button" class="key key--eq" data-action="equals" aria-label="계산">=</button>
+    </div>
+
+    <p class="foot">
+      시각 언어는 <a href="https://socarframe.socar.kr/" target="_blank" rel="noopener noreferrer">SOCAR Frame 2.0</a> 디자인 시스템을 참조합니다.
+    </p>
+  </main>
+
+  <div id="flash-layer" aria-hidden="true"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var resultEl = document.getElementById("result");
+  var exprEl   = document.getElementById("expr");
+  var keypad   = document.getElementById("keypad");
+  var flashLayer = document.getElementById("flash-layer");
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var OP_SIGN = { add: "+", subtract: "−", multiply: "×", divide: "÷" };
+
+  // ── Calculator state machine ────────────────────────────────
+  var state = {
+    current: "0",       // string being typed / shown
+    previous: null,     // number stored before an operator
+    operator: null,     // "add" | "subtract" | ...
+    waiting: false,     // true after operator: next digit starts fresh
+    error: false
+  };
+
+  function compute(a, b, op) {
+    switch (op) {
+      case "add":      return a + b;
+      case "subtract": return a - b;
+      case "multiply": return a * b;
+      case "divide":   return b === 0 ? null : a / b; // null = error
+    }
+    return b;
+  }
+
+  // Round to avoid float noise, keep tabular-friendly formatting.
+  function format(n) {
+    if (n === null || !isFinite(n)) return null;
+    // limit precision, strip trailing zeros
+    var rounded = Math.round((n + Number.EPSILON) * 1e10) / 1e10;
+    var str;
+    if (Math.abs(rounded) >= 1e15 || (rounded !== 0 && Math.abs(rounded) < 1e-9)) {
+      str = rounded.toExponential(6).replace(/\.?0+e/, "e");
+    } else {
+      str = String(rounded);
+    }
+    return str;
+  }
+
+  function groupInt(intPart) {
+    var neg = intPart.charAt(0) === "-";
+    if (neg) intPart = intPart.slice(1);
+    intPart = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return (neg ? "-" : "") + intPart;
+  }
+
+  // Display grouping (thousands) without breaking the raw value.
+  function display(str) {
+    if (str.indexOf("e") !== -1 || str.indexOf("E") !== -1) return str;
+    var parts = str.split(".");
+    parts[0] = groupInt(parts[0]);
+    return parts.join(".");
+  }
+
+  function render() {
+    resultEl.classList.toggle("is-error", state.error);
+    resultEl.textContent = state.error ? "계산할 수 없어요" : display(state.current);
+
+    if (state.error) { exprEl.textContent = ""; return; }
+    if (state.operator !== null && state.previous !== null) {
+      exprEl.textContent = display(format(state.previous)) + " " + OP_SIGN[state.operator];
+    } else {
+      exprEl.textContent = "";
+    }
+  }
+
+  function clearAll() {
+    state.current = "0";
+    state.previous = null;
+    state.operator = null;
+    state.waiting = false;
+    state.error = false;
+    render();
+  }
+
+  function inputDigit(d) {
+    if (state.error) clearAll();
+    if (state.waiting) { state.current = d; state.waiting = false; }
+    else {
+      if (state.current === "0") state.current = d;
+      else if (state.current === "-0") state.current = "-" + d;
+      else state.current += d;
+    }
+    render();
+  }
+
+  function inputDecimal() {
+    if (state.error) clearAll();
+    if (state.waiting) { state.current = "0."; state.waiting = false; render(); return; }
+    if (state.current.indexOf(".") === -1) state.current += ".";
+    render();
+  }
+
+  function negate() {
+    if (state.error) return;
+    if (state.current === "0" || state.current === "0.") return;
+    state.current = state.current.charAt(0) === "-"
+      ? state.current.slice(1)
+      : "-" + state.current;
+    render();
+  }
+
+  function percent() {
+    if (state.error) return;
+    var val = parseFloat(state.current);
+    if (isNaN(val)) return;
+    // percent of the stored operand when mid-operation, else plain /100
+    var base = (state.operator !== null && state.previous !== null) ? state.previous : 1;
+    var out = format(val / 100 * base);
+    if (out === null) { setError(); return; }
+    state.current = out;
+    state.waiting = false;
+    render();
+  }
+
+  function setError() {
+    state.error = true;
+    state.previous = null;
+    state.operator = null;
+    state.waiting = false;
+    render();
+  }
+
+  function chooseOperator(op) {
+    if (state.error) return;
+    var input = parseFloat(state.current);
+
+    if (state.operator !== null && !state.waiting && state.previous !== null) {
+      // chain: fold pending operation first
+      var res = compute(state.previous, input, state.operator);
+      if (res === null) { setError(); return; }
+      var f = format(res);
+      if (f === null) { setError(); return; }
+      state.previous = parseFloat(f);
+      state.current = f;
+    } else {
+      state.previous = input;
+    }
+    state.operator = op;
+    state.waiting = true;
+    render();
+  }
+
+  function equals() {
+    if (state.error || state.operator === null || state.previous === null) return;
+    var input = parseFloat(state.current);
+    var res = compute(state.previous, input, state.operator);
+    if (res === null) { setError(); return; }
+    var f = format(res);
+    if (f === null) { setError(); return; }
+    state.current = f;
+    state.previous = null;
+    state.operator = null;
+    state.waiting = false;
+    render();
+  }
+
+  // ── Signature: brand immersion flash ────────────────────────
+  var PEAK = { digit: 0.24, op: 0.28, util: 0.22, eq: 0.30 };
+
+  function spawnFlash(x, y, kind) {
+    if (reduceMotion) return;
+    var el = document.createElement("div");
+    el.className = "flash";
+    el.style.setProperty("--fx", (x / window.innerWidth * 100) + "%");
+    el.style.setProperty("--fy", (y / window.innerHeight * 100) + "%");
+    el.style.setProperty("--peak", PEAK[kind] || 0.26);
+    el.addEventListener("animationend", function () {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    });
+    flashLayer.appendChild(el);
+  }
+
+  function kindOf(btn) {
+    if (btn.classList.contains("key--eq")) return "eq";
+    if (btn.classList.contains("key--op")) return "op";
+    if (btn.classList.contains("key--util")) return "util";
+    return "digit";
+  }
+
+  function handle(btn) {
+    if (btn.dataset.digit !== undefined) inputDigit(btn.dataset.digit);
+    else if (btn.dataset.op !== undefined) chooseOperator(btn.dataset.op);
+    else switch (btn.dataset.action) {
+      case "all-clear": clearAll(); break;
+      case "negate":    negate();  break;
+      case "percent":   percent(); break;
+      case "decimal":   inputDecimal(); break;
+      case "equals":    equals();  break;
+    }
+    // active-operator highlight
+    updateOpHighlight();
+  }
+
+  function updateOpHighlight() {
+    var ops = keypad.querySelectorAll(".key--op");
+    for (var i = 0; i < ops.length; i++) {
+      var on = state.waiting && state.operator === ops[i].dataset.op;
+      ops[i].classList.toggle("is-active", on);
+    }
+  }
+
+  // Click on keypad (delegated) + flash at pointer location
+  keypad.addEventListener("pointerdown", function (e) {
+    var btn = e.target.closest(".key");
+    if (btn) spawnFlash(e.clientX, e.clientY, kindOf(btn));
+  });
+  keypad.addEventListener("click", function (e) {
+    var btn = e.target.closest(".key");
+    if (btn) handle(btn);
+  });
+
+  // Header chip (AC)
+  document.querySelector(".chip").addEventListener("pointerdown", function (e) {
+    spawnFlash(e.clientX, e.clientY, "util");
+  });
+  document.querySelector(".chip").addEventListener("click", clearAll);
+
+  // ── Keyboard ────────────────────────────────────────────────
+  var KEYMAP = {
+    "+": "add", "-": "subtract", "*": "multiply", "x": "divide", "/": "divide"
+  };
+  window.addEventListener("keydown", function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = e.key, matched = null;
+
+    // A focused button already fires a native click on Enter/Space —
+    // let that path handle it to avoid double execution.
+    if (e.target.tagName === "BUTTON" &&
+        (k === "Enter" || k === " " || k === "Spacebar")) return;
+
+    if (k >= "0" && k <= "9") { inputDigit(k); matched = "digit"; }
+    else if (k === ".") { inputDecimal(); matched = "digit"; }
+    else if (KEYMAP[k]) { chooseOperator(KEYMAP[k]); matched = "op"; }
+    else if (k === "Enter" || k === "=") { equals(); matched = "eq"; }
+    else if (k === "Escape") { clearAll(); matched = "util"; }
+    else if (k === "%") { percent(); matched = "util"; }
+    else if (k === "Backspace") { deleteLast(); matched = "digit"; }
+    else return;
+
+    e.preventDefault();
+    updateOpHighlight();
+    // flash from center-ish for keyboard input
+    spawnFlash(window.innerWidth / 2, window.innerHeight * 0.62, matched);
+  });
+
+  function deleteLast() {
+    if (state.error) { clearAll(); return; }
+    if (state.waiting) return;
+    if (state.current.length <= 1 ||
+        (state.current.length === 2 && state.current.charAt(0) === "-")) {
+      state.current = "0";
+    } else {
+      state.current = state.current.slice(0, -1);
+    }
+    render();
+  }
+
+  clearAll();
+})();
+</script>
+</body>
+</html>

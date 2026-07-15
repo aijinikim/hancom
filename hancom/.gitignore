@@ -39,3 +39,8 @@ assets/
 
 # GROQ_API_KEY
 .env
+
+# Claude Code / 스킬 툴링 - 로컬 전용
+.agents/
+.claude/
+skills-lock.json

@@ -4,3 +4,8 @@ package-lock.json
 .gemini_session
 gemini_server.js
 .env
+
+# 임시 / Claude Code 툴링 - 로컬 전용
+TEMP/
+.agents/
+.claude/

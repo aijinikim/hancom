@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CLAUDE-84 레트로 계산기</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="calculator" aria-label="계산기">
+    <div class="brand">
+      <span class="brand-name">CLAUDE-84</span>
+      <span class="brand-sub">SOLAR RETRO</span>
+    </div>
+
+    <!-- 태양광 패널 장식 + LCD -->
+    <div class="lcd-panel">
+      <div class="solar" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="display" role="status" aria-live="polite">
+        <div class="display-expr" id="expr"></div>
+        <div class="display-main" id="main">0</div>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <!-- 행1: 메모리 -->
+      <button class="btn mem"   data-action="mem-clear"  data-value="MC">MC</button>
+      <button class="btn mem"   data-action="mem-recall" data-value="MR">MR</button>
+      <button class="btn mem"   data-action="mem-sub"    data-value="M-">M&minus;</button>
+      <button class="btn mem"   data-action="mem-add"    data-value="M+">M+</button>
+
+      <!-- 행2 -->
+      <button class="btn func"  data-action="clear"      data-value="C">C</button>
+      <button class="btn func"  data-action="sign"       data-value="+/-">&plusmn;</button>
+      <button class="btn func"  data-action="percent"    data-value="%">%</button>
+      <button class="btn op"    data-action="operator"   data-value="/">&divide;</button>
+
+      <!-- 행3 -->
+      <button class="btn num"   data-action="number"     data-value="7">7</button>
+      <button class="btn num"   data-action="number"     data-value="8">8</button>
+      <button class="btn num"   data-action="number"     data-value="9">9</button>
+      <button class="btn op"    data-action="operator"   data-value="*">&times;</button>
+
+      <!-- 행4 -->
+      <button class="btn num"   data-action="number"     data-value="4">4</button>
+      <button class="btn num"   data-action="number"     data-value="5">5</button>
+      <button class="btn num"   data-action="number"     data-value="6">6</button>
+      <button class="btn op"    data-action="operator"   data-value="-">&minus;</button>
+
+      <!-- 행5 -->
+      <button class="btn num"   data-action="number"     data-value="1">1</button>
+      <button class="btn num"   data-action="number"     data-value="2">2</button>
+      <button class="btn num"   data-action="number"     data-value="3">3</button>
+      <button class="btn op"    data-action="operator"   data-value="+">+</button>
+
+      <!-- 행6 -->
+      <button class="btn num zero" data-action="number"  data-value="0">0</button>
+      <button class="btn num"   data-action="decimal"    data-value=".">.</button>
+      <button class="btn equals" data-action="equals"    data-value="=">=</button>
+    </div>
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
