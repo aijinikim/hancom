@@ -56,6 +56,17 @@
 - `06_frontend_design_ko_md` : 한글 디자인 명세 기반 제작
 - `07_haiku` : Haiku 모델 활용
 
+### 10_anaconda
+- Anaconda 설치 및 파이썬 개발 환경 구성
+- 파이썬 실행 환경 준비
+
+### 11_python
+- 파이썬 기초 문법 — 변수/자료형, 연산자, 리스트, f-string
+- 제어문 — 조건문(if), 반복문(for / while), zip
+- 함수 — def / return, 예외 처리(try / except)
+- 파일 입출력(with), 클래스, 람다(lambda)
+- 콘솔 출력 꾸미기 — pyfiglet, termcolor
+
 ## 📖 학습 방법
 
 각 폴더별 순차적 학습을 권장합니다.
@@ -66,8 +77,9 @@
 - Node.js 18+
 - VSCode
 - Claude Code (AI 코딩 도구)
+- Python 3 / Anaconda
 - 브라우저 (Chrome, Firefox 등)
 
 ---
 
-*마지막 업데이트: 2026-07-15*
+*마지막 업데이트: 2026-07-16*
