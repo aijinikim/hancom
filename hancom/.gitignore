@@ -11,20 +11,20 @@ node_modules/
 # 브라우저 임시 파일
 c_lt_matt_*
 
-# 아직 미완성 - 로컬 전용 (푸시 금지)
-04_js/06_js/
-04_js/08/
-04_js/09/
-04_js/10/
-04_js/11/
-04_js/12/
-04_js/13/
-04_js/14/
-04_js/15/
-04_js/16/
-04_js/17/
-04_js/18/
-04_js/19/
+# 아직 미완성 - 로컬 전용 (푸시 금지) — 04_js → 05_js 로 폴더 재번호됨
+05_js/06_js/
+05_js/08/
+05_js/09/
+05_js/10/
+05_js/11/
+05_js/12/
+05_js/13/
+05_js/14/
+05_js/15/
+05_js/16/
+05_js/17/
+05_js/18/
+05_js/19/
 
 # 로컬 전용 - 리모트 제외 (푸시 금지)
 _daily/
@@ -44,3 +44,20 @@ assets/
 .agents/
 .claude/
 skills-lock.json
+
+# 파이썬 캐시
+__pycache__/
+*.pyc
+
+# 모델 가중치·바이너리 산출물 (용량 큼, 재다운로드 가능 / GitHub 100MB 초과)
+*.pt
+*.npy
+*.zip
+
+# YOLO 로컬 데이터·산출물 (푸시 금지, 용량 큼) — 코드(.py)만 포함
+14_yolo/advanced/images/
+14_yolo/advanced/demo_data/
+14_yolo/advanced/weights/
+14_yolo/advanced/sahi/
+14_yolo/advanced/yolo11n_openvino_model/
+14_yolo/basic/runs/

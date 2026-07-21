@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>계산기</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .calc {
+    width: 320px;
+    background: #22223b;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+  }
+  .display {
+    background: #16161f;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+    text-align: right;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .expr {
+    color: #8a8aa3;
+    font-size: 16px;
+    min-height: 20px;
+    word-break: break-all;
+  }
+  .result {
+    color: #fff;
+    font-size: 40px;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .keys {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 18px 0;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #fff;
+    background: #33334d;
+    transition: filter .15s, transform .05s;
+  }
+  button:hover { filter: brightness(1.2); }
+  button:active { transform: scale(0.95); }
+  .op { background: #4a4a7a; }
+  .fn { background: #5a5a4a; color: #ffd479; }
+  .eq { background: #f97316; grid-column: span 2; }
+  .zero { grid-column: span 2; }
+</style>
+</head>
+<body>
+  <div class="calc">
+    <div class="display">
+      <div class="expr" id="expr"></div>
+      <div class="result" id="result">0</div>
+    </div>
+    <div class="keys">
+      <button class="fn" data-action="clear">C</button>
+      <button class="fn" data-action="back">⌫</button>
+      <button class="fn" data-val="%">%</button>
+      <button class="op" data-val="/">÷</button>
+
+      <button data-val="7">7</button>
+      <button data-val="8">8</button>
+      <button data-val="9">9</button>
+      <button class="op" data-val="*">×</button>
+
+      <button data-val="4">4</button>
+      <button data-val="5">5</button>
+      <button data-val="6">6</button>
+      <button class="op" data-val="-">−</button>
+
+      <button data-val="1">1</button>
+      <button data-val="2">2</button>
+      <button data-val="3">3</button>
+      <button class="op" data-val="+">+</button>
+
+      <button class="zero" data-val="0">0</button>
+      <button data-val=".">.</button>
+      <button class="eq" data-action="equals">=</button>
+    </div>
+  </div>
+
+<script>
+  const exprEl = document.getElementById('expr');
+  const resultEl = document.getElementById('result');
+  let expr = '';
+
+  const opChars = ['+', '-', '*', '/', '%'];
+
+  function render() {
+    exprEl.textContent = expr.replace(/\*/g, '×').replace(/\//g, '÷');
+    resultEl.textContent = liveResult() ?? (expr || '0');
+  }
+
+  function liveResult() {
+    if (!expr) return '0';
+    try {
+      const val = evaluate(expr);
+      if (val === null || !isFinite(val)) return null;
+      return trim(val);
+    } catch { return null; }
+  }
+
+  // safe eval: tokenize numbers + operators only, no Function/eval
+  function evaluate(s) {
+    // % -> /100 handled as modulo? use as percent: treat a%b invalid; use plain modulo
+    const tokens = s.match(/(\d+\.?\d*|\.\d+|[+\-*/%])/g);
+    if (!tokens) return null;
+    // shunting-yard to RPN
+    const prec = { '+':1, '-':1, '*':2, '/':2, '%':2 };
+    const out = [], ops = [];
+    let prevType = null;
+    for (let i = 0; i < tokens.length; i++) {
+      const t = tokens[i];
+      if (/[\d.]/.test(t[0])) {
+        out.push(parseFloat(t));
+        prevType = 'num';
+      } else {
+        // unary minus
+        if (t === '-' && (prevType === null || prevType === 'op')) {
+          out.push(0);
+        }
+        while (ops.length && prec[ops[ops.length-1]] >= prec[t]) {
+          out.push(ops.pop());
+        }
+        ops.push(t);
+        prevType = 'op';
+      }
+    }
+    while (ops.length) out.push(ops.pop());
+    // eval RPN
+    const st = [];
+    for (const t of out) {
+      if (typeof t === 'number') { st.push(t); continue; }
+      const b = st.pop(), a = st.pop();
+      if (a === undefined || b === undefined) return null;
+      let r;
+      switch (t) {
+        case '+': r = a + b; break;
+        case '-': r = a - b; break;
+        case '*': r = a * b; break;
+        case '/': r = b === 0 ? null : a / b; break;
+        case '%': r = a % b; break;
+      }
+      if (r === null) return null;
+      st.push(r);
+    }
+    return st.length === 1 ? st[0] : null;
+  }
+
+  function trim(n) {
+    return parseFloat(n.toFixed(10)).toString();
+  }
+
+  function input(val) {
+    const last = expr.slice(-1);
+    if (opChars.includes(val)) {
+      if (expr === '' && val !== '-') return;
+      if (opChars.includes(last)) expr = expr.slice(0, -1); // replace operator
+    }
+    if (val === '.') {
+      // prevent two dots in current number
+      const seg = expr.split(/[+\-*/%]/).pop();
+      if (seg.includes('.')) return;
+      if (seg === '') val = '0.';
+    }
+    expr += val;
+    render();
+  }
+
+  document.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => {
+      const action = b.dataset.action;
+      if (action === 'clear') { expr = ''; render(); return; }
+      if (action === 'back') { expr = expr.slice(0, -1); render(); return; }
+      if (action === 'equals') {
+        const val = liveResult();
+        if (val !== null) { expr = val === 'NaN' ? '' : val; }
+        render();
+        return;
+      }
+      input(b.dataset.val);
+    });
+  });
+
+  // keyboard support
+  window.addEventListener('keydown', e => {
+    const k = e.key;
+    if (/[\d]/.test(k)) input(k);
+    else if (['+','-','*','/','%','.'].includes(k)) input(k);
+    else if (k === 'Enter' || k === '=') {
+      const val = liveResult();
+      if (val !== null) expr = val;
+      render();
+    }
+    else if (k === 'Backspace') { expr = expr.slice(0, -1); render(); }
+    else if (k === 'Escape') { expr = ''; render(); }
+  });
+
+  render();
+</script>
+</body>
+</html>
