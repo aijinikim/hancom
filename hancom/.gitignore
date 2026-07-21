@@ -49,8 +49,22 @@ skills-lock.json
 __pycache__/
 *.pyc
 
-# 모델 가중치·바이너리 산출물 (용량 큼, 재다운로드 가능 / GitHub 100MB 초과)
+# 모델 가중치 전부 제외 (용량 큼, 재다운로드 가능 / GitHub 100MB 초과)
 *.pt
+*.pth
+*.onnx
+*.safetensors
+*.bin
+*.h5
+*.tflite
+*.pb
+*.weights
+*.gguf
+*.ckpt
+*.engine
+*.mlmodel
+
+# 기타 바이너리 산출물
 *.npy
 *.zip
 
