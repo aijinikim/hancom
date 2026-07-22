@@ -1,6 +1,6 @@
 # 한컴 프로그래밍 교육 자료
 
-웹 개발 기초부터 React, 백엔드, AI 연동, 배포, 데이터·컴퓨터비전(YOLO)까지의 통합 교육 커리큘럼입니다.
+웹 개발 기초부터 React, 백엔드, AI 연동, 배포, 데이터·컴퓨터비전(YOLO), 공공 API·LLM·NLP·OCR까지의 통합 교육 커리큘럼입니다.
 
 ## 📚 커리큘럼 구성
 
@@ -82,6 +82,25 @@
 - 기초: 탐지·분류·세그멘테이션·포즈 추정
 - 심화: SAHI 슬라이스 추론, FastSAM 등 고급 기법
 - ※ 모델 가중치(.pt 등)는 용량 커서 저장소 제외
+
+### 15_openapi
+- 공공/외부 REST API 호출 (국가교통정보 ITS)
+- 인증키·요청 URL, `urllib` → JSON → DataFrame 변환
+- 실시간 CCTV 조회 + YOLO 객체탐지 결합
+
+### 16_huggingface
+- HuggingFace Inference API로 서버 없이 AI 호출
+- `InferenceClient` — LLM 챗(DeepSeek), 텍스트→이미지 생성
+- 토큰(HF_TOKEN) `.env` 관리, 401/429 대처
+
+### 17_transformers
+- `transformers` pipeline으로 NLP 태스크 실행
+- 문장 유사도 / 감정 분석 / 텍스트 생성 / 요약·번역
+- 태스크별 모델 선택, 언어 한계(영어 vs 한국어)
+
+### 18_ocr
+- 이미지 → 텍스트 추출 (OCR)
+- Tesseract · PaddleOCR 비교, 전처리로 인식률 향상
 
 ## 📖 학습 방법
 
