@@ -75,3 +75,9 @@ __pycache__/
 14_yolo/advanced/sahi/
 14_yolo/advanced/yolo11n_openvino_model/
 14_yolo/basic/runs/
+
+# Gradio 런타임 산출물 (인증서·flagged 데이터 등, 소스 아님)
+.gradio/
+
+# Streamlit 로컬 설정
+.streamlit/secrets.toml
